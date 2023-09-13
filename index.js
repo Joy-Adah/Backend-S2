@@ -1,24 +1,24 @@
 const express = require('express');
 
+const dotenv = require('dotenv').config();
+
 const bodyParser = require('body-parser');
 
 const mysql = require('mysql');
 
-require('dotenv').config();
-
 const app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3306;
 
-// MySQL connection
-const pool = mysql.createPool({
+ // MySQL connection
+const db = mysql.createPool({
   host: process.env.HOST,
   user: process.env.USER,
   password: process.env.PASSWORD,
   database: process.env.DATABASE,
 });
 
-pool.getConnection((err) => {
+db.getConnection((err) => {
   if (err) {
     console.error('Error connecting to MySQL:', err);
     return;
@@ -42,7 +42,7 @@ const validateName = (req, res, next) => {
 // Getting users
 app.get('/api/', (req, res) => {
   const query = 'SELECT * FROM persons';
-  pool.query(query, (error, results) => {
+  db.query(query, (error, results) => {
     if (error) {
       console.error('Error retrieving users:', error);
       res.status(500).json({ error: 'An error occurred' });
@@ -56,7 +56,7 @@ app.get('/api/', (req, res) => {
 app.get('/api/:id', (req, res) => {
   const { id } = req.params;
   const query = 'SELECT * FROM persons WHERE id = ?';
-  pool.query(query, [id], (error, results) => {
+  db.query(query, [id], (error, results) => {
     if (error) {
       console.error('Error retrieving person:', error);
       res.status(500).json({ error: 'An error occurred' });
@@ -72,7 +72,7 @@ app.get('/api/:id', (req, res) => {
 app.post('/api', validateName, (req, res) => {
   const { name } = req.body;
   const query = 'INSERT INTO persons (name) VALUES (?)';
-  pool.query(query, [name], (error, results) => {
+  db.query(query, [name], (error, results) => {
     if (error) {
       console.error('Error creating person:', error);
       res.status(500).json({ error: 'Error' });
@@ -87,7 +87,7 @@ app.put('/api/:id', validateName, (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
   const query = 'UPDATE person SET name = ? WHERE id = ?';
-  pool.query(query, [name, id], (error, results) => {
+  db.query(query, [name, id], (error, results) => {
     if (error) {
       console.error('Error:', error);
       res.status(500).json({ error: 'An error occurred' });
@@ -103,7 +103,7 @@ app.put('/api/:id', validateName, (req, res) => {
 app.delete('/api/:id', (req, res) => {
   const { id } = req.params;
   const query = 'DELETE FROM persons WHERE id = ?';
-  pool.query(query, [id], (error, results) => {
+  db.query(query, [id], (error, results) => {
     if (error) {
       console.error('Error deleting person:', error);
       res.status(500).json({ error: 'Error' });
