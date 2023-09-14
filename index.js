@@ -4,7 +4,7 @@ const dotenv = require('dotenv').config();
 
 const bodyParser = require('body-parser');
 
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
 const app = express();
 
@@ -40,7 +40,7 @@ const validateName = (req, res, next) => {
 };
 
 // Getting users
-app.get('/api/', (req, res) => {
+app.get('/api', (req, res) => {
   const query = 'SELECT * FROM persons';
   db.query(query, (error, results) => {
     if (error) {
